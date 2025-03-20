@@ -123,11 +123,11 @@ class R1_mAP_eval:
         gf = feats[self.num_query :]
         g_pids = np.asarray(self.pids[self.num_query :])
         g_camids = np.asarray(self.camids[self.num_query :])
-        print("gallery feature 사이즈: ", qf.size())
+        print("gallery feature 사이즈: ", gf.size())
         # text feature
         tf = tfeats[self.num_query :]
         tf = tf.to(dtype=torch.float32)
-        print("text feature 사이즈: ", qf.size())
+        print("text feature 사이즈: ", tf.size())
         if self.reranking:
             print("=> Enter reranking")
             distmat = re_ranking(qf, gf, k1=50, k2=15, lambda_value=0.3)
