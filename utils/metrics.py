@@ -99,13 +99,48 @@ class R1_mAP_eval:
         self.feats = []
         self.pids = []
         self.camids = []
+        self.tfeats = []
 
     def update(self, output):  # called once for each batch
-        feat, pid, camid = output
+        feat, pid, camid, text_features = output
         self.feats.append(feat.cpu())
         self.pids.extend(np.asarray(pid))
         self.camids.extend(np.asarray(camid))
+        self.tfeats.append(text_features.cpu())
+        
+    def compute(self):  # called after each epoch
+        feats = torch.cat(self.feats, dim=0)
+        tfeats = torch.cat(self.tfeats, dim=0)
+        if self.feat_norm:
+            print("The test feature is normalized")
+            feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
+        # query
+        qf = feats[: self.num_query]
+        q_pids = np.asarray(self.pids[: self.num_query])
+        q_camids = np.asarray(self.camids[: self.num_query])
+        # gallery
+        gf = feats[self.num_query :]
+        g_pids = np.asarray(self.pids[self.num_query :])
+        g_camids = np.asarray(self.camids[self.num_query :])
+        # text feature
+        tf = tfeats[self.num_query :]
+        
+        if self.reranking:
+            print("=> Enter reranking")
+            distmat = re_ranking(qf, gf, k1=50, k2=15, lambda_value=0.3)
+        else:
+            print("=> dist 행렬 계산")
+            distmat_img = euclidean_distance(qf, gf)
+            rank_list_img = np.argsort(distmat_img, axis=1)
+            distmat_text = euclidean_distance(qf, tf)
+            rank_list_text = np.argsort(distmat_text, axis=1)
+            
+            beta = 0.7  # 이미지 검색의 가중치
+            distmat = beta * rank_list_img + (1 - beta) * rank_list_text
+        cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
 
+        return cmc, mAP, distmat, self.pids, self.camids, qf, gf
+"""
     def compute(self):  # called after each epoch
         feats = torch.cat(self.feats, dim=0)
         if self.feat_norm:
@@ -117,17 +152,16 @@ class R1_mAP_eval:
         q_camids = np.asarray(self.camids[: self.num_query])
         # gallery
         gf = feats[self.num_query :]
-        g_pids = np.asarray(self.pids[self.num_query :])
-
+        g_pids = np.asarray(self.pids[self.num_query :])x
         g_camids = np.asarray(self.camids[self.num_query :])
         if self.reranking:
             print("=> Enter reranking")
             # distmat = re_ranking(qf, gf, k1=20, k2=6, lambda_value=0.3)
             distmat = re_ranking(qf, gf, k1=50, k2=15, lambda_value=0.3)
-
         else:
             print("=> Computing DistMat with euclidean_distance")
             distmat = euclidean_distance(qf, gf)
         cmc, mAP = eval_func(distmat, q_pids, g_pids, q_camids, g_camids)
 
         return cmc, mAP, distmat, self.pids, self.camids, qf, gf
+"""
