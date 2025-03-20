@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import os
 from utils.reranking import re_ranking
 
 def euclidean_distance(qf, gf):
@@ -99,14 +98,12 @@ class R1_mAP_eval:
         self.feats = []
         self.pids = []
         self.camids = []
-        self.tfeats = []
 
     def update(self, output):  # called once for each batch
-        feat, pid, camid, text_features = output
+        feat, pid, camid = output
         self.feats.append(feat.cpu())
         self.pids.extend(np.asarray(pid))
         self.camids.extend(np.asarray(camid))
-        self.tfeats.append(text_features.cpu())
         
     def compute(self):  # called after each epoch
         feats = torch.cat(self.feats, dim=0)
@@ -119,7 +116,7 @@ class R1_mAP_eval:
         q_camids = np.asarray(self.camids[: self.num_query])
         # gallery
         gf = feats[self.num_query :]
-        g_pids = np.asarray(self.pids[self.num_query :])x
+        g_pids = np.asarray(self.pids[self.num_query :])
         g_camids = np.asarray(self.camids[self.num_query :])
         if self.reranking:
             print("=> Enter reranking")

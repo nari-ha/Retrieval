@@ -8,7 +8,6 @@ from utils.metrics import R1_mAP_eval
 from utils.curves import draw_curve
 import torch.amp as amp
 import torch.distributed as dist
-from torch.nn import functional as F
 from loss.supcontrast import SupConLoss
 
 
@@ -49,10 +48,8 @@ def do_train_stage2(cfg,
     scaler = amp.GradScaler()
     xent = SupConLoss(device)
     
-    loss_history = []
-    accuracy_history = []
-    map_history = []
-    r1_history = []
+    # 그래프 그리기용 리스트들
+    loss_history, accuracy_history, map_history, r1_history = [], [], [], []
     
     # train
     import time
@@ -125,7 +122,8 @@ def do_train_stage2(cfg,
                 logger.info("Epoch[{}] Iteration[{}/{}] Loss: {:.3f}, Acc: {:.3f}, Base Lr: {:.2e}"
                             .format(epoch, (n_iter + 1), len(train_loader_stage2),
                                     loss_meter.avg, acc_meter.avg, scheduler.get_lr()[0]))
-                
+        
+        # 각 epoch가 끝날 때마다 loss랑 accuracy 저장        
         loss_history.append(loss_meter.avg)
         accuracy_history.append(acc_meter.avg)
         
@@ -139,7 +137,8 @@ def do_train_stage2(cfg,
 
         if epoch % checkpoint_period == 0:
             save_model(cfg, model, epoch)
-
+            
+        # 평가 epoch 주기 돌아오면 eval 실행
         if epoch % eval_period == 0:
             mAP, r1 = evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger)  # 모델 평가
             map_history.append(round(mAP * 100, 1))
@@ -149,6 +148,7 @@ def do_train_stage2(cfg,
     total_time = timedelta(seconds=all_end_time - all_start_time)
     logger.info("Total running time: {}".format(total_time))
     
+    # 학습 끝나면 그래프 생성 및 저장
     draw_curve(cfg, loss_history, accuracy_history, map_history, r1_history)
     
 
@@ -160,7 +160,6 @@ def save_model(cfg, model, epoch):
                os.path.join(cfg.OUTPUT_DIR, f"{cfg.MODEL.NAME}_{epoch}.pth"))
 
 def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
-    # 모델 평가하기
     model.eval()
     for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
         with torch.no_grad():
