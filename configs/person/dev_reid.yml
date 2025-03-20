@@ -81,7 +81,4 @@ DATASETS:
   ROOT_DIR: ('./../dataset')
 OUTPUT_DIR: './output/dev'
 
-DATA_COMBINE: False
-DATA_COMBINE_EVAL: 1 # 0 : combine, 1: market1501, 2: msmt17
-
 # CUDA_VISIBLE_DEVICES=1 python train_clipreid.py --config_file configs/person/res_clipreid.yml

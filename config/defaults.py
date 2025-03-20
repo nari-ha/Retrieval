@@ -235,6 +235,3 @@ _C.TEST.EVAL = False
 # ---------------------------------------------------------------------------- #
 # Path to checkpoint and saved log of trained model
 _C.OUTPUT_DIR = ""
-
-_C.DATA_COMBINE = False
-_C.DATA_COMBINE_EVAL = 0
