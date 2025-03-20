@@ -126,8 +126,7 @@ class R1_mAP_eval:
         print("gallery feature 사이즈: ", gf.size())
         # text feature
         print("tfeats 사이즈: ", tfeats.size())
-        print(self.num_query,"가 뭔지")
-        tf = tfeats[self.num_query :]
+        tf = tfeats[: self.num_query]
         tf = tf.to(dtype=torch.float32)
         print("text feature 사이즈: ", tf.size())
         if self.reranking:
