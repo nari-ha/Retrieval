@@ -4,7 +4,7 @@ import torch
 import os
 
 def draw_curve(cfg, loss_history, accuracy_history, map_history, r1_history):
-        # learning curve graph 저장
+    # learning curve graph 저장
     loss_history = np.array(loss_history)
     accuracy_history = np.array([acc.cpu().numpy() if isinstance(acc, torch.Tensor) else acc for acc in accuracy_history])
     fig, ax1 = plt.subplots(figsize=(8, 6))
