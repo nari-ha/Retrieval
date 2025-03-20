@@ -192,7 +192,7 @@ class PromptLearner(nn.Module):
         if dataset_name == "VehicleID" or dataset_name == "veri":
             ctx_init = "A photo of a X X X X vehicle."
         else:
-            ctx_init = "A photo of a X X X X person."
+            ctx_init = "A photo of a X X X X."
 
         ctx_dim = 512
         # use given words to initialize context vectors
