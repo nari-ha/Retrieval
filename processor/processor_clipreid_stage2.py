@@ -55,11 +55,9 @@ def do_train_stage2(cfg,
     import time
     from datetime import timedelta
     all_start_time = time.monotonic()
-
-    # train
     batch = cfg.SOLVER.STAGE2.IMS_PER_BATCH
     i_ter = num_classes // batch
-    left = num_classes-batch* (num_classes//batch)
+    left = num_classes - batch * (num_classes // batch)
     if left != 0 :
         i_ter = i_ter+1
     text_features = []
