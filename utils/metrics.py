@@ -109,8 +109,12 @@ class R1_mAP_eval:
         self.tfeats.append(text_features.cpu())
         
     def compute(self):  # called after each epoch
+        print("1 feats size: ", feats.size())
+        print("1 tfeats size: ", feats.size())
         feats = torch.cat(self.feats, dim=0)
         tfeats = torch.cat(self.tfeats, dim=0)
+        print("2 feats size: ", feats.size())
+        print("2 tfeats size: ", tfeats.size())
         if self.feat_norm:
             print("The test feature is normalized")
             feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
