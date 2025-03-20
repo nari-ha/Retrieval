@@ -137,7 +137,7 @@ class build_transformer(nn.Module):
             img_feature_proj = image_features_proj[:,0]
 
         feat = self.bottleneck(img_feature) 
-        feat_proj = self.bottleneck_proj(img_feature_proj) 
+        feat_proj = self.bottleneck_proj(img_feature_proj)
         
         if self.training:
             cls_score = self.classifier(feat)
@@ -199,7 +199,7 @@ class PromptLearner(nn.Module):
         ctx_init = ctx_init.replace("_", " ")
         n_ctx = 4
         
-        tokenized_prompts = clip.tokenize(ctx_init).cuda() 
+        tokenized_prompts = clip.tokenize(ctx_init).cuda()
         with torch.no_grad():
             embedding = token_embedding(tokenized_prompts).type(dtype) 
         self.tokenized_prompts = tokenized_prompts  # torch.Tensor
