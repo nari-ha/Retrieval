@@ -124,6 +124,7 @@ class R1_mAP_eval:
         g_camids = np.asarray(self.camids[self.num_query :])
         # text feature
         tf = tfeats[self.num_query :]
+        tf = tf.to(dtype=torch.float32)
         
         if self.reranking:
             print("=> Enter reranking")
