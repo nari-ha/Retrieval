@@ -7,4 +7,4 @@
 /utils/__pycache__
 /model/backbones/__pycache__
 /model/clip/__pycache__
-/output/*
+/output/
