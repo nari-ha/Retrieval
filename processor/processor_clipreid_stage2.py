@@ -159,7 +159,7 @@ def save_model(cfg, model, epoch):
     
 def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
     model.eval()
-    text_features = []
+    tfeat = []
     num_classes = model.num_classes
     
     with torch.no_grad():
@@ -170,9 +170,9 @@ def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
 
         for i in range(i_ter):
             l_list = torch.arange(i * batch, min((i + 1) * batch, num_classes))
-            text_feature = model(label=l_list.to(device), get_text=True)
-            text_features.append(text_feature.cpu())
-        text_features = torch.cat(text_features, dim=0).cuda()
+            tf = model(label=l_list.to(device), get_text=True)
+            tfeat.append(tf.cpu())
+        tfeat = torch.cat(tfeat, dim=0).cuda()
     
     for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
         with torch.no_grad():
@@ -180,9 +180,9 @@ def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
             camids = camids.to(device) if cfg.MODEL.SIE_CAMERA else None
             target_view = target_view.to(device) if cfg.MODEL.SIE_VIEW else None
             feat = model(img, cam_label=camids, view_label=target_view)
-            evaluator.update((feat, vid, camid))
+            evaluator.update((feat, tfeat, vid, camid))
     
-    cmc, mAP, _, _, _, _, _ = evaluator.compute()
+    cmc, mAP, _, _, _, _, _ = evaluator.compute(tfeat)
     logger.info(f"Validation Results - Epoch: {epoch}")
     logger.info(f"mAP: {mAP:.1%}")
     for r in [1, 5, 10]:
