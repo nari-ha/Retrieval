@@ -156,7 +156,42 @@ def save_model(cfg, model, epoch):
     
     torch.save(model.state_dict(),
                os.path.join(cfg.OUTPUT_DIR, f"{cfg.MODEL.NAME}_{epoch}.pth"))
+    
+def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
+    model.eval()
+    text_features = []
+    num_classes = model.num_classes
+    
+    with torch.no_grad():
+        batch = cfg.SOLVER.STAGE2.IMS_PER_BATCH
+        i_ter = num_classes // batch
+        if num_classes % batch != 0:
+            i_ter += 1
 
+        for i in range(i_ter):
+            l_list = torch.arange(i * batch, min((i + 1) * batch, num_classes))
+            text_feature = model(label=l_list.to(device), get_text=True)
+            text_features.append(text_feature.cpu())
+        text_features = torch.cat(text_features, dim=0).cuda()
+    
+    for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
+        with torch.no_grad():
+            img = img.to(device)
+            camids = camids.to(device) if cfg.MODEL.SIE_CAMERA else None
+            target_view = target_view.to(device) if cfg.MODEL.SIE_VIEW else None
+            feat = model(img, cam_label=camids, view_label=target_view)
+            evaluator.update((feat, vid, camid))
+    
+    cmc, mAP, _, _, _, _, _ = evaluator.compute()
+    logger.info(f"Validation Results - Epoch: {epoch}")
+    logger.info(f"mAP: {mAP:.1%}")
+    for r in [1, 5, 10]:
+        logger.info(f"CMC curve, Rank-{r:<3}:{cmc[r - 1]:.1%}")
+    
+    torch.cuda.empty_cache()
+    return mAP, cmc[0]    
+
+"""
 def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
     model.eval()
     for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
@@ -175,7 +210,7 @@ def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
     
     torch.cuda.empty_cache()
     return mAP, cmc[0]
-
+"""
 def do_inference(cfg,
                  model,
                  val_loader,

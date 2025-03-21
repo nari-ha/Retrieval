@@ -115,6 +115,9 @@ class build_transformer(nn.Module):
                 return image_features_proj[0]
             elif self.model_name == 'ViT-B-16':
                 return image_features_proj[:,0]
+            
+        if not self.training:
+            return image_features_proj, text_features
         
         if self.model_name == 'RN50':
             image_features_last, image_features, image_features_proj = self.image_encoder(x) 
