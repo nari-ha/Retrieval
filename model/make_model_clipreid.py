@@ -225,10 +225,13 @@ class PromptLearner(nn.Module):
         print("라벨: ", label)
         label = torch.tensor(label)
         print("라벨 사이즈: ", label.size())
-
-        cls_ctx = self.cls_ctx[label] 
-        print("cls_ctx: ", cls_ctx.size())
+        cls_ctx = self.cls_ctx[label]
+        cls_ctx = cls_ctx.cpu()
+        label = label.cpu()
+        print("여기")
+        print("여기")
         b = label.shape[0]
+        print("저기")
         prefix = self.token_prefix.expand(b, -1, -1) 
         suffix = self.token_suffix.expand(b, -1, -1) 
             
