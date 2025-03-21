@@ -179,8 +179,9 @@ def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
             img = img.to(device)
             camids = camids.to(device) if cfg.MODEL.SIE_CAMERA else None
             target_view = target_view.to(device) if cfg.MODEL.SIE_VIEW else None
+            print("img, vid", img, vid)
             feat = model(img, cam_label=camids, view_label=target_view)
-            evaluator.update((feat, tfeat, vid, camid))
+            evaluator.update((feat, vid, camid))
     
     cmc, mAP, _, _, _, _, _ = evaluator.compute(tfeat)
     logger.info(f"Validation Results - Epoch: {epoch}")
