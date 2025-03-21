@@ -234,6 +234,8 @@ class PromptLearner(nn.Module):
         print("저기")
         prefix = self.token_prefix.expand(b, -1, -1) 
         suffix = self.token_suffix.expand(b, -1, -1) 
+        prefix = prefix.cpu()
+        suffix = suffix.cpu()
             
         prompts = torch.cat(
             [
