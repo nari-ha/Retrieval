@@ -176,10 +176,11 @@ def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
     for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
         with torch.no_grad():
             img = img.to(device)
-            vid = vid.to(device)
+            label = torch.tensor(vid)
+            label = label.to(device)
             camids = camids.to(device) if cfg.MODEL.SIE_CAMERA else None
             target_view = target_view.to(device) if cfg.MODEL.SIE_VIEW else None
-            feat, tfeat = model(img, label = vid, cam_label=camids, view_label=target_view)
+            feat, tfeat = model(img, label = label, cam_label=camids, view_label=target_view)
             print("feat size: ",feat.size(), "tfeat size: ", tfeat.size())
             evaluator.update((feat, tfeat, vid, camid))
     
