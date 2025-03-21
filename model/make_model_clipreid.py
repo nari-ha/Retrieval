@@ -115,10 +115,7 @@ class build_transformer(nn.Module):
                 return image_features_proj[0]
             elif self.model_name == 'ViT-B-16':
                 return image_features_proj[:,0]
-            
-        if not self.training:
-            return image_features_proj, text_features
-        
+             
         if self.model_name == 'RN50':
             image_features_last, image_features, image_features_proj = self.image_encoder(x) 
             img_feature_last = nn.functional.avg_pool2d(image_features_last, image_features_last.shape[2:4]).view(x.shape[0], -1) 
@@ -148,11 +145,11 @@ class build_transformer(nn.Module):
             return [cls_score, cls_score_proj], [img_feature_last, img_feature, img_feature_proj], img_feature_proj
 
         else:
+            print("neck_feat", self.neck_feat)
             if self.neck_feat == 'after':
-                # print("Test with feature after BN")
-                return torch.cat([feat, feat_proj], dim=1)
+                return torch.cat([feat, feat_proj], dim=1), text_features
             else:
-                return torch.cat([img_feature, img_feature_proj], dim=1)
+                return torch.cat([img_feature, img_feature_proj], dim=1), text_features
 
 
     def load_param(self, trained_path):
