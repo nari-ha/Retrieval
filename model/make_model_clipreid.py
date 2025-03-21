@@ -222,6 +222,8 @@ class PromptLearner(nn.Module):
         self.n_cls_ctx = n_cls_ctx
 
     def forward(self, label):
+        print("라벨: ", label)
+        print("라벨 사이즈: ", label.size())
         cls_ctx = self.cls_ctx[label] 
         b = label.shape[0]
         prefix = self.token_prefix.expand(b, -1, -1) 
