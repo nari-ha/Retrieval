@@ -244,7 +244,8 @@ class PromptLearner(nn.Module):
                 suffix,  # (n_cls, *, dim)
             ],
             dim=1,
-        ) 
+        )
+        prompts = prompts.to("cuda") 
 
         return prompts 
 
