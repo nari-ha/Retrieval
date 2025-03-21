@@ -159,29 +159,28 @@ def save_model(cfg, model, epoch):
     
 def evaluate_model(cfg, model, val_loader, evaluator, device, epoch, logger):
     model.eval()
-    tfeat = []
     num_classes = model.num_classes
     
-    with torch.no_grad():
-        batch = cfg.SOLVER.STAGE2.IMS_PER_BATCH
-        i_ter = num_classes // batch
-        if num_classes % batch != 0:
-            i_ter += 1
+    # with torch.no_grad():
+    #     batch = cfg.SOLVER.STAGE2.IMS_PER_BATCH
+    #     i_ter = num_classes // batch
+    #     if num_classes % batch != 0:
+    #         i_ter += 1
 
-        for i in range(i_ter):
-            l_list = torch.arange(i * batch, min((i + 1) * batch, num_classes))
-            tf = model(label=l_list.to(device), get_text=True)
-            tfeat.append(tf.cpu())
-        tfeat = torch.cat(tfeat, dim=0).cuda()
+    #     for i in range(i_ter):
+    #         l_list = torch.arange(i * batch, min((i + 1) * batch, num_classes))
+    #         tf = model(label=l_list.to(device), get_text=True)
+    #         tfeat.append(tf.cpu())
+    #     tfeat = torch.cat(tfeat, dim=0).cuda()
     
     for n_iter, (img, vid, camid, camids, target_view, _) in enumerate(val_loader):
         with torch.no_grad():
             img = img.to(device)
             camids = camids.to(device) if cfg.MODEL.SIE_CAMERA else None
             target_view = target_view.to(device) if cfg.MODEL.SIE_VIEW else None
-            print("img, vid", img, vid)
-            feat = model(img, cam_label=camids, view_label=target_view)
-            evaluator.update((feat, vid, camid))
+            feat, tfeat = model(img, label = vid, cam_label=camids, view_label=target_view)
+            print("feat size: ",feat.size(), "tfeat size: ", tfeat.size())
+            evaluator.update((feat, tfeat, vid, camid))
     
     cmc, mAP, _, _, _, _, _ = evaluator.compute(tfeat)
     logger.info(f"Validation Results - Epoch: {epoch}")

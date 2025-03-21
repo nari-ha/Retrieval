@@ -147,10 +147,12 @@ class build_transformer(nn.Module):
 
         else:
             print("neck_feat", self.neck_feat)
+            prompts = self.prompt_learner(label) 
+            text_features = self.text_encoder(prompts, self.prompt_learner.tokenized_prompts)
             if self.neck_feat == 'after':
-                return torch.cat([feat, feat_proj], dim=1)
+                return torch.cat([feat, feat_proj], dim=1), text_features
             else:
-                return torch.cat([img_feature, img_feature_proj], dim=1)
+                return torch.cat([img_feature, img_feature_proj], dim=1), text_features
 
 
     def load_param(self, trained_path):

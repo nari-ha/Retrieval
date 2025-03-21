@@ -96,19 +96,21 @@ class R1_mAP_eval:
 
     def reset(self):
         self.feats = []
+        self.tfeats = []
         self.pids = []
         self.camids = []
         self.tfeats = []
 
     def update(self, output):  # called once for each batch
-        feat, pid, camid = output
+        feat, tfeat, pid, camid = output
+        self.feats.append(feat.cpu())
         self.feats.append(feat.cpu())
         self.pids.extend(np.asarray(pid))
         self.camids.extend(np.asarray(camid))
         
     def compute(self, tfeat):  # called after each epoch
         feats = torch.cat(self.feats, dim=0)
-        tfeats = tfeat.cpu()
+        tfeats = torch.cat(self.tfeats, dim=0)
         if self.feat_norm:
             print("The test feature is normalized")
             feats = torch.nn.functional.normalize(feats, dim=1, p=2)  # along channel
